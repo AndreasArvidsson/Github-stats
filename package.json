@@ -5,7 +5,7 @@
     "main": "index.js",
     "scripts": {
         "start": "webpack-dev-server --config webpack.config.js --mode development  --port 9090 --open",
-        "build": "webpack --mode production --config webpack.config.js"
+        "build": "webpack --config webpack.config.js --mode production"
     },
     "keywords": [
         "github",
@@ -26,7 +26,8 @@
         "react": "^16.9.0",
         "owp.http": "^1.0.2",
         "owp.glyphicons": "^1.1.0",
-        "owp.http-loading-bar": "^1.1.0"
+        "owp.http-loading-bar": "^1.2.1",
+        "react-loading-bar": "^0.0.7"
     },
     "devDependencies": {
         "webpack": "latest",
