@@ -21,7 +21,7 @@ const App = () => {
         if (!rateLimit || !repos.length) {
             return;
         }
-        if (repos.length <= rateLimit.remaining) {
+        if (dummy || repos.length <= rateLimit.remaining) {
             if (!dummy) {
                 rateLimit.remaining -= repos.length;
             }
@@ -62,7 +62,7 @@ const App = () => {
         getRateLimit()
             .then(res => {
                 const rateLimit = res.resources.core;
-                if (rateLimit.remaining) {
+                if (dummy || rateLimit.remaining) {
                     if (!dummy) {
                         rateLimit.remaining--;
                     }
@@ -134,13 +134,18 @@ const App = () => {
 
     const renderRepos = () => {
         return (
-            <div>
-                <hr />
-                <h3>Repositories ({repos.length})</h3>
-                <table className="table">
-                    <thead>
+            <div style={{ marginTop: 20 }}>
+                <table className="table table-striped">
+                    <thead className="thead-dark">
                         <tr>
-                            <th>Repository</th>
+                            <td></td>
+                            <td colSpan="3" style={{ textAlign: "center" }}>
+                                <i>Number of lines of code added</i>
+                            </td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <th>Repositories ({repos.length})</th>
                             <th>1 week</th>
                             <th>1 month</th>
                             <th>6 months</th>
