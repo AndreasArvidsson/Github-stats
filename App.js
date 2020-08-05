@@ -218,18 +218,23 @@ function calculatePeriods(codeFreq) {
                 case 26:
                     res.halfYear = sum;
                     break;
-                case maxDuration:
+                case 52:
                     res.year = sum;
-                    if (res.halfYear === undefined) {
-                        res.halfYear = sum;
-                    }
-                    if (res.month === undefined) {
-                        res.month = sum;
-                    }
-                    if (res.week === undefined) {
-                        res.week = sum;
-                    }
                     break;
+            }
+            if (i === maxDuration) {
+                if (res.year === undefined) {
+                    res.year = sum;
+                }
+                if (res.halfYear === undefined) {
+                    res.halfYear = sum;
+                }
+                if (res.month === undefined) {
+                    res.month = sum;
+                }
+                if (res.week === undefined) {
+                    res.week = sum;
+                }
             }
         }
     }
