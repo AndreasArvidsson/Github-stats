@@ -49,7 +49,7 @@ function tryGet(url, resolve, reject, waitTime) {
             }
             //If response is 202 then wait and try again.
             else {
-                waitTime = waitTime || 1000;
+                waitTime = waitTime || 5000;
                 console.log(202, url, "Waiting for: ", waitTime)
                 setTimeout(() => {
                     tryGet(url, resolve, reject, waitTime * 2);
