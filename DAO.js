@@ -2,8 +2,6 @@ import HTTP from "owp.http";
 import dummyRepos from "./dummyRepos";
 import dummyCodeFreq from "./dummyCodeFreq";
 
-//
-
 let dummy = false;
 
 export default {
