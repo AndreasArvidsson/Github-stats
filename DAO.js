@@ -41,18 +41,19 @@ function get(url) {
     });
 }
 
-function tryGet(url, resolve, reject) {
+function tryGet(url, resolve, reject, waitTime) {
     HTTP.get(url, { fullResponse: true })
         .then(res => {
             if (res.statusCode !== 202) {
                 resolve(res.data);
             }
-            //If response is 202 then wait 100ms and try again
+            //If response is 202 then wait and try again.
             else {
-                console.log(202, url)
+                waitTime = waitTime || 1000;
+                console.log(202, url, "Waiting for: ", waitTime)
                 setTimeout(() => {
-                    tryGet(url, resolve, reject);
-                }, 100);
+                    tryGet(url, resolve, reject, waitTime * 2);
+                }, waitTime);
             }
         })
         .catch(reject);
