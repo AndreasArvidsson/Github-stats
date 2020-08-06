@@ -8,11 +8,6 @@ module.exports = {
         path: path.resolve(__dirname, "docs"),
         filename: "index.js"
     },
-    // resolve: {
-    //     modules: [
-    //         path.resolve(__dirname, "node_modules")
-    //     ]
-    // },
     module: {
         rules: [
             {
@@ -41,7 +36,7 @@ module.exports = {
                 ]
             },
             {
-                test: /\.(eot|woff|woff2|ttf|svg|wav|flac|mp3)$/,
+                test: /\.(eot|woff|woff2|ttf|svg)$/,
                 loader: "file-loader"
             }
         ]

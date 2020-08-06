@@ -1,10 +1,12 @@
-import HTTP from "owp.http";
 import Glyph from "owp.glyphicons";
 import React, { useState, useEffect } from "react";
-import dummyRepos from "./dummyRepos";
-import dummyCodeFreq from "./dummyCodeFreq";
+import DAO from "./DAO";
 
 const dummy = false;
+
+if (dummy) {
+    DAO.setDummy();
+}
 
 const App = () => {
     const [username, setUsername] = useState("AndreasArvidsson");
@@ -27,7 +29,7 @@ const App = () => {
             }
             setRateLimit({ ...rateLimit });
             const promises = repos.map(repo =>
-                getCodeFrequency(username, repo.name)
+                DAO.getCodeFrequency(username, repo.name)
             );
             Promise.all(promises)
                 .then(res => {
@@ -48,7 +50,7 @@ const App = () => {
     }, [repos]);
 
     const loadRateLimit = () => {
-        getRateLimit()
+        DAO.getRateLimit()
             .then(res => {
                 setRateLimit(res.resources.core);
             })
@@ -59,14 +61,14 @@ const App = () => {
         setRepos([]);
         setPeriods({});
 
-        getRateLimit()
+        DAO.getRateLimit()
             .then(res => {
                 const rateLimit = res.resources.core;
                 if (dummy || rateLimit.remaining) {
                     if (!dummy) {
                         rateLimit.remaining--;
                     }
-                    getRepositories(username)
+                    DAO.getRepositories(username)
                         .then(setRepos)
                         .catch(console.error);
                 }
@@ -146,10 +148,11 @@ const App = () => {
                         </tr>
                         <tr>
                             <th>Repositories ({repos.length})</th>
-                            <th>1 week</th>
-                            <th>1 month</th>
-                            <th>6 months</th>
-                            <th>1 year</th>
+                            <th title="1 week">1 week</th>
+                            <th title="4 weeks">1 month</th>
+                            <th title="26 weeks">6 months</th>
+                            <th title="52 weeks">1 year</th>
+                            <th title="156 weeks">3 years</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -181,6 +184,7 @@ const App = () => {
                 <td>{p.month}</td>
                 <td>{p.halfYear}</td>
                 <td>{p.year}</td>
+                <td>{p.threeYears}</td>
             </tr>
         );
     }
@@ -200,14 +204,13 @@ export default App;
 
 function calculatePeriods(codeFreq) {
     const res = {};
+    let sum = 0;
     if (codeFreq && codeFreq.length) {
-        //Iterate max one year
-        const maxDuration = Math.min(codeFreq.length, 52) - 1;
-        let sum = 0;
-        for (let i = 0; i <= maxDuration; ++i) {
-            const index = codeFreq.length - i - 1;
-            //Sumarize added lines.
-            sum += codeFreq[index][1];
+        const maxDuration = Math.min(codeFreq.length, 156);
+        //Iterate over all weeks
+        for (let i = 1; i <= maxDuration; ++i) {
+            //Sumarize added lines. index 1 is added lines.
+            sum += codeFreq[codeFreq.length - i][1];
             switch (i) {
                 case 1:
                     res.week = sum;
@@ -221,20 +224,26 @@ function calculatePeriods(codeFreq) {
                 case 52:
                     res.year = sum;
                     break;
+                case 156:
+                    res.threeYears = sum;
+                    break;
             }
         }
-        if (res.year === undefined) {
-            res.year = sum;
-        }
-        if (res.halfYear === undefined) {
-            res.halfYear = sum;
-        }
-        if (res.month === undefined) {
-            res.month = sum;
-        }
-        if (res.week === undefined) {
-            res.week = sum;
-        }
+    }
+    if (res.threeYears === undefined) {
+        res.threeYears = sum;
+    }
+    if (res.year === undefined) {
+        res.year = sum;
+    }
+    if (res.halfYear === undefined) {
+        res.halfYear = sum;
+    }
+    if (res.month === undefined) {
+        res.month = sum;
+    }
+    if (res.week === undefined) {
+        res.week = sum;
     }
     return res;
 }
@@ -255,34 +264,3 @@ function calculatePeriodsSum(periods) {
     }
     return res;
 }
-
-function getRateLimit() {
-    return HTTP.get("https://api.github.com/rate_limit");
-}
-
-function getRepositories(user) {
-    if (dummy) {
-        return Promise.resolve(dummyRepos);
-    }
-    return HTTP.get(`https://api.github.com/users/${user}/repos`);
-}
-
-//Get the weekly commit activity
-//Returns a weekly aggregate of the number of additions and deletions pushed to a repository.
-function getCodeFrequency(user, repo) {
-    if (dummy) {
-        if (dummyCodeFreq[repo]) {
-            return Promise.resolve(dummyCodeFreq[repo]);
-        }
-        return Promise.reject("Can't find dummy for repo: " + repo);
-    }
-    return HTTP.get(`https://api.github.com/repos/${user}/${repo}/stats/code_frequency`);
-}
-//https://api.github.com/repos/AndreasArvidsson/LuaMongo/stats/code_frequency
-
-//Get the last year of commit activity
-//Returns the last year of commit activity grouped by week. The days array is a group of commits per day, starting on Sunday.
-// function getCommits(user, repo) {
-//     return HTTP.get(`https://api.github.com/repos/${user}/${repo}/stats/commit_activity`);
-// }
-
