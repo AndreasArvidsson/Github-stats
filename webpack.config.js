@@ -6,7 +6,7 @@ module.exports = {
     entry: path.resolve(__dirname, "index.js"),
     output: {
         path: path.resolve(__dirname, "docs"),
-        filename: "index.js"
+        filename: "[contenthash].js"
     },
     module: {
         rules: [
@@ -47,7 +47,7 @@ module.exports = {
         }),
         //Extract css styles as external file.
         new MiniCssExtractPlugin({
-            filename: "styles.css"
+            filename: "[contenthash].css"
         })
     ]
 };
