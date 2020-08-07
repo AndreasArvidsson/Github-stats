@@ -179,6 +179,7 @@ const App = () => {
                             <th title="26 weeks" onClick={() => setSortBy(2)}>6 months</th>
                             <th title="52 weeks" onClick={() => setSortBy(3)}>1 year</th>
                             <th title="156 weeks" onClick={() => setSortBy(4)}>3 years</th>
+                            <th title="All available weeks" onClick={() => setSortBy(5)}>Total</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -229,15 +230,14 @@ const App = () => {
 
 export default App;
 
-const numVals = 5;
+const numVals = 6;
 
 function calculatePeriods(codeFreq) {
     const res = new Array(numVals);
     let sum = 0;
-    if (codeFreq && codeFreq.length) {
-        const maxDuration = Math.min(codeFreq.length, 156);
+    if (codeFreq) {
         //Iterate over all weeks
-        for (let i = 1; i <= maxDuration; ++i) {
+        for (let i = 1; i <= codeFreq.length; ++i) {
             //Sumarize added lines. index 1 is added lines.
             sum += codeFreq[codeFreq.length - i][1];
             switch (i) {
