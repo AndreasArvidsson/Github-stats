@@ -2,7 +2,7 @@ import Glyph from "owp.glyphicons";
 import React, { useState, useEffect } from "react";
 import DAO from "./DAO";
 
-const dummy = false;
+const dummy = true;
 
 if (dummy) {
     DAO.setDummy();
@@ -15,6 +15,7 @@ const App = () => {
     const [repos, setRepos] = useState([]);
     const [periods, setPeriods] = useState({});
     const [isLoading, setIsLoading] = useState(false);
+    const [sortBy, setSortBy] = useState(null);
 
     useEffect(() => {
         loadRateLimit();
@@ -146,6 +147,20 @@ const App = () => {
         if (isLoading) {
             return <div style={style}>Loading...</div>;
         }
+
+        if (sortBy !== null) {
+            repos.sort((a, b) => {
+                const pA = periods[a.name];
+                const pB = periods[b.name];
+                return pB[sortBy] - pA[sortBy];
+            });
+        }
+        else {
+            repos.sort((a, b) => {
+                return a.name.localeCompare(b.name);
+            });
+        }
+
         return (
             <div style={style}>
                 <table className="table table-striped">
@@ -158,12 +173,12 @@ const App = () => {
                             <td></td>
                         </tr>
                         <tr>
-                            <th>Repositories ({repos.length})</th>
-                            <th title="1 week">1 week</th>
-                            <th title="4 weeks">1 month</th>
-                            <th title="26 weeks">6 months</th>
-                            <th title="52 weeks">1 year</th>
-                            <th title="156 weeks">3 years</th>
+                            <th onClick={() => setSortBy(null)}>Repositories ({repos.length})</th>
+                            <th title="1 week" onClick={() => setSortBy(0)}>1 week</th>
+                            <th title="4 weeks" onClick={() => setSortBy(1)}>1 month</th>
+                            <th title="26 weeks" onClick={() => setSortBy(2)}>6 months</th>
+                            <th title="52 weeks" onClick={() => setSortBy(3)}>1 year</th>
+                            <th title="156 weeks" onClick={() => setSortBy(4)}>3 years</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -180,22 +195,23 @@ const App = () => {
         let name, p, bold;
         if (repo) {
             name = repo.name;
-            p = periods[repo.name] || {};
+            p = periods[repo.name];
         }
         //Sum row
         else {
             name = "Sum";
-            p = periods._sum || {};
+            p = periods._sum;
             bold = true;
+        }
+        if (!p) {
+            p = new Array(numVals).fill("");
         }
         return (
             <tr key={name} style={bold ? { fontWeight: "bold" } : null}>
                 <td>{name}</td>
-                <td>{p.week}</td>
-                <td>{p.month}</td>
-                <td>{p.halfYear}</td>
-                <td>{p.year}</td>
-                <td>{p.threeYears}</td>
+                {p.map((val, i) =>
+                    <td key={i}>{val}</td>
+                )}
             </tr>
         );
     }
@@ -213,8 +229,10 @@ const App = () => {
 
 export default App;
 
+const numVals = 5;
+
 function calculatePeriods(codeFreq) {
-    const res = {};
+    const res = new Array(numVals);
     let sum = 0;
     if (codeFreq && codeFreq.length) {
         const maxDuration = Math.min(codeFreq.length, 156);
@@ -224,53 +242,37 @@ function calculatePeriods(codeFreq) {
             sum += codeFreq[codeFreq.length - i][1];
             switch (i) {
                 case 1:
-                    res.week = sum;
+                    res[0] = sum;
                     break;
                 case 4:
-                    res.month = sum;
+                    res[1] = sum;
                     break;
                 case 26:
-                    res.halfYear = sum;
+                    res[2] = sum;
                     break;
                 case 52:
-                    res.year = sum;
+                    res[3] = sum;
                     break;
                 case 156:
-                    res.threeYears = sum;
+                    res[4] = sum;
                     break;
             }
         }
     }
-    if (res.threeYears === undefined) {
-        res.threeYears = sum;
-    }
-    if (res.year === undefined) {
-        res.year = sum;
-    }
-    if (res.halfYear === undefined) {
-        res.halfYear = sum;
-    }
-    if (res.month === undefined) {
-        res.month = sum;
-    }
-    if (res.week === undefined) {
-        res.week = sum;
+    for (let i = 0; i < res.length; ++i) {
+        if (res[i] === undefined) {
+            res[i] = sum;
+        }
     }
     return res;
 }
 
 function calculatePeriodsSum(periods) {
-    const res = {};
+    const res = new Array(numVals).fill(0);
     for (let i in periods) {
         const p = periods[i];
-        for (let field in p) {
-            const value = p[field];
-            if (res[field] === undefined) {
-                res[field] = value;
-            }
-            else {
-                res[field] += value;
-            }
+        for (let j = 0; j < p.length; ++j) {
+            res[j] += p[j];
         }
     }
     return res;
