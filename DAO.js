@@ -11,14 +11,14 @@ export default {
     },
 
     getRateLimit: function () {
-        return get("https://api.github.com/rate_limit");
+        return HTTP.get("https://api.github.com/rate_limit");
     },
 
     getRepositories: function (user) {
         if (dummy) {
             return Promise.resolve(dummyRepos);
         }
-        return get(`https://api.github.com/users/${user}/repos`);
+        return HTTP.get(`https://api.github.com/users/${user}/repos`);
     },
 
     //Get the weekly commit activity
@@ -26,7 +26,10 @@ export default {
     getCodeFrequency: function (user, repo) {
         if (dummy) {
             if (dummyCodeFreq[repo]) {
-                return Promise.resolve(dummyCodeFreq[repo]);
+                return Promise.resolve({
+                    data: dummyCodeFreq[repo],
+                    numAtempts: 0
+                });
             }
             return Promise.reject("Can't find dummy for repo: " + repo);
         }
@@ -41,18 +44,21 @@ function get(url) {
     });
 }
 
-function tryGet(url, resolve, reject, waitTime) {
+function tryGet(url, resolve, reject, atemptNr = 1) {
     HTTP.get(url, { fullResponse: true })
         .then(res => {
             if (res.statusCode !== 202) {
-                resolve(res.data);
+                resolve({
+                    data: res.data,
+                    numAtempts: atemptNr
+                });
             }
             //If response is 202 then wait and try again.
             else {
-                waitTime = waitTime || 5000;
+                const waitTime = 5 * atemptNr;
                 console.log(202, url, "Waiting for: ", waitTime)
                 setTimeout(() => {
-                    tryGet(url, resolve, reject, waitTime * 2);
+                    tryGet(url, resolve, reject, atemptNr + 1);
                 }, waitTime);
             }
         })
