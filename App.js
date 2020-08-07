@@ -14,10 +14,17 @@ const App = () => {
     const [rateLimit, setRateLimit] = useState();
     const [repos, setRepos] = useState([]);
     const [periods, setPeriods] = useState({});
+    const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
         loadRateLimit();
     }, []);
+
+    const doCatch = (error) => {
+        console.error(error);
+        setError(error);
+        setIsLoading(false);
+    };
 
     useEffect(() => {
         if (!rateLimit || !repos.length) {
@@ -26,8 +33,8 @@ const App = () => {
         if (dummy || repos.length <= rateLimit.remaining) {
             if (!dummy) {
                 rateLimit.remaining -= repos.length;
+                setRateLimit({ ...rateLimit });
             }
-            setRateLimit({ ...rateLimit });
             const promises = repos.map(repo =>
                 DAO.getCodeFrequency(username, repo.name)
             );
@@ -40,26 +47,30 @@ const App = () => {
                     });
                     periods._sum = calculatePeriodsSum(periods);
                     setPeriods(periods);
+                    setIsLoading(false);
                 })
-                .catch(console.error);
+                .catch(doCatch);
         }
         else {
             setError("Can't load code frequency due to rate limit");
             setPeriods({});
+            setIsLoading(false);
         }
     }, [repos]);
+
 
     const loadRateLimit = () => {
         DAO.getRateLimit()
             .then(res => {
                 setRateLimit(res.resources.core);
             })
-            .catch(console.error);
+            .catch(doCatch);
     }
 
     const loadData = () => {
         setRepos([]);
         setPeriods({});
+        setIsLoading(true);
 
         DAO.getRateLimit()
             .then(res => {
@@ -70,14 +81,15 @@ const App = () => {
                     }
                     DAO.getRepositories(username)
                         .then(setRepos)
-                        .catch(console.error);
+                        .catch(doCatch);
                 }
                 else {
                     setError("Can't load repositories due to rate limit");
+                    setIsLoading(false);
                 }
                 setRateLimit(rateLimit);
             })
-            .catch(console.error);
+            .catch(doCatch);
     }
 
     const renderRateLimit = () => {
@@ -135,8 +147,12 @@ const App = () => {
     }
 
     const renderRepos = () => {
+        const style = { marginTop: 20 };
+        if (isLoading) {
+            return <div style={style}>Loading...</div>;
+        }
         return (
-            <div style={{ marginTop: 20 }}>
+            <div style={style}>
                 <table className="table table-striped">
                     <thead className="thead-dark">
                         <tr>
