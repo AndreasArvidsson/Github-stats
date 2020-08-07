@@ -2,7 +2,7 @@ import Glyph from "owp.glyphicons";
 import React, { useState, useEffect } from "react";
 import DAO from "./DAO";
 
-const dummy = true;
+const dummy = false;
 
 if (dummy) {
     DAO.setDummy();
