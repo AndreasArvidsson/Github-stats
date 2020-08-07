@@ -2,7 +2,7 @@ import Glyph from "owp.glyphicons";
 import React, { useState, useEffect } from "react";
 import DAO from "./DAO";
 
-const dummy = false;
+const dummy = true;
 
 if (dummy) {
     DAO.setDummy();
@@ -31,21 +31,23 @@ const App = () => {
             return;
         }
         if (dummy || repos.length <= rateLimit.remaining) {
-            if (!dummy) {
-                rateLimit.remaining -= repos.length;
-                setRateLimit({ ...rateLimit });
-            }
             const promises = repos.map(repo =>
                 DAO.getCodeFrequency(username, repo.name)
             );
             Promise.all(promises)
-                .then(res => {
+                .then(resList => {
                     const periods = {};
-                    res.forEach((cf, i) => {
+                    let numRatesUsed = 0;
+                    resList.forEach((res, i) => {
                         const repo = repos[i];
-                        periods[repo.name] = calculatePeriods(cf);
+                        periods[repo.name] = calculatePeriods(res.data);
+                        numRatesUsed += res.numAtempts;
                     });
                     periods._sum = calculatePeriodsSum(periods);
+                    if (numRatesUsed) {
+                        rateLimit.remaining -= numRatesUsed;
+                        setRateLimit({ ...rateLimit });
+                    }
                     setPeriods(periods);
                     setIsLoading(false);
                 })
