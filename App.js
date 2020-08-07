@@ -23,6 +23,7 @@ const App = () => {
     const doCatch = (error) => {
         console.error(error);
         setError(error);
+        loadRateLimit();
         setIsLoading(false);
     };
 
@@ -37,18 +38,13 @@ const App = () => {
             Promise.all(promises)
                 .then(resList => {
                     const periods = {};
-                    let numRatesUsed = 0;
                     resList.forEach((res, i) => {
                         const repo = repos[i];
-                        periods[repo.name] = calculatePeriods(res.data);
-                        numRatesUsed += res.numAtempts;
+                        periods[repo.name] = calculatePeriods(res);
                     });
                     periods._sum = calculatePeriodsSum(periods);
-                    if (numRatesUsed) {
-                        rateLimit.remaining -= numRatesUsed;
-                        setRateLimit({ ...rateLimit });
-                    }
                     setPeriods(periods);
+                    loadRateLimit();
                     setIsLoading(false);
                 })
                 .catch(doCatch);
@@ -62,9 +58,7 @@ const App = () => {
 
     const loadRateLimit = () => {
         DAO.getRateLimit()
-            .then(res => {
-                setRateLimit(res.resources.core);
-            })
+            .then(res => setRateLimit(res.resources.core))
             .catch(doCatch);
     }
 

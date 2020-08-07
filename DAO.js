@@ -26,16 +26,12 @@ export default {
     getCodeFrequency: function (user, repo) {
         if (dummy) {
             if (dummyCodeFreq[repo]) {
-                return Promise.resolve({
-                    data: dummyCodeFreq[repo],
-                    numAtempts: 0
-                });
+                return Promise.resolve(dummyCodeFreq[repo]);
             }
             return Promise.reject("Can't find dummy for repo: " + repo);
         }
         return get(`https://api.github.com/repos/${user}/${repo}/stats/code_frequency`);
     }
-
 };
 
 function get(url) {
@@ -44,21 +40,17 @@ function get(url) {
     });
 }
 
-function tryGet(url, resolve, reject, atemptNr = 1) {
+function tryGet(url, resolve, reject, waitTime = 10000) {
     HTTP.get(url, { fullResponse: true })
         .then(res => {
             if (res.statusCode !== 202) {
-                resolve({
-                    data: res.data,
-                    numAtempts: atemptNr
-                });
+                resolve(res.data);
             }
             //If response is 202 then wait and try again.
             else {
-                const waitTime = 5 * atemptNr;
                 console.log(202, url, "Waiting for: ", waitTime)
                 setTimeout(() => {
-                    tryGet(url, resolve, reject, atemptNr + 1);
+                    tryGet(url, resolve, reject, waitTime * 2);
                 }, waitTime);
             }
         })
