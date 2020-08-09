@@ -193,10 +193,11 @@ const App = () => {
     }
 
     const renderRepo = (repo) => {
-        let name, p, bold;
+        let name, p, bold, link;
         if (repo) {
             name = repo.name;
             p = periods[repo.name];
+            link = `https://github.com/${username}/${repo.name}`;
         }
         //Sum row
         else {
@@ -209,7 +210,12 @@ const App = () => {
         }
         return (
             <tr key={name} style={bold ? { fontWeight: "bold" } : null}>
-                <td>{name}</td>
+                <td>
+                    {link
+                        ? <a href={link} target="_blank" rel="noreferrer">{name}</a>
+                        : name
+                    }
+                </td>
                 {p.map((val, i) =>
                     <td key={i}>{val}</td>
                 )}
