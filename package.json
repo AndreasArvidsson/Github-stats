@@ -17,10 +17,10 @@
     "homepage": "https://github.com/AndreasArvidsson/Github-stats",
     "repository": {
         "type": "git",
-        "url": "https://github.com/AndreasArvidsson/Github-stats"
+        "url": "https://github.com/AndreasArvidsson/Github-stats.git"
     },
     "bugs": {
-        "url": "https://github.com/AndreasArvidsson/Github-stats"
+        "url": "https://github.com/AndreasArvidsson/Github-stats/issues"
     },
     "dependencies": {
         "react": "^16.9.0",
